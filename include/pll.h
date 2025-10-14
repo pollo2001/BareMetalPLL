@@ -43,6 +43,6 @@ struct PLL_State{
     int32_t last_phase_error; //used for derivative calculation
   
     //status INTR FLAG
-    volatile uint8_t LOCK_FLAG = 0; //lock success indicator, lock = 1
+    volatile uint8_t LOCK_FLAG; //lock success indicator, lock = 1
 };
 
