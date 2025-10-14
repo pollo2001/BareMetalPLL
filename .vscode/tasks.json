@@ -1,0 +1,26 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+	  {
+		"label": "build C17",
+		"type": "shell",
+		"command": "gcc",
+		"args": [
+		  "-std=c17",
+		  "-o", "${fileDirname}/${fileBasenameNoExtension}",
+		  "${file}",
+		  "-lm",
+		  "-I/opt/homebrew/include",  // For Apple Silicon Mac
+		  "-L/opt/homebrew/lib",      // For Apple Silicon Mac
+		],
+		
+		"group": {
+		  "kind": "build",
+		  "isDefault": true
+		},
+		"problemMatcher": ["$gcc"],
+		"detail": "Generated task for building C17 code on macOS"
+	  }
+	]
+  }
+  

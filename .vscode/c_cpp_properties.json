@@ -1,0 +1,19 @@
+{
+    "configurations": [
+        {
+            "name": "Mac",
+            "includePath": [
+                "${workspaceFolder}/include",             // Add the 'include' folder to the project structure
+                "${workspaceFolder}/src"                  // Add 'src' folder for the source code
+            ],
+            "defines": [],
+            "macFrameworkPath": [
+                "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks"
+            ],
+            "cStandard": "c17",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "macos-clang-arm64"       // Use Clang for Apple Silicon (M1) architecture
+        }
+    ],
+    "version": 4
+}
