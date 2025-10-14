@@ -9,7 +9,7 @@ Reference --------> |   Phase Detector   | ----> Loop Filter ----> VCO/NCO ---->
                           |                                    |
                           +-------- Frequency Divider <--------+
 */
-#include <stdio.h>
+
 #include <stdint.h>
 
 //define limits of MCU----assuming 32 bit system
@@ -22,7 +22,6 @@ Reference --------> |   Phase Detector   | ----> Loop Filter ----> VCO/NCO ---->
 
 #define MAX_N_DIVIDER 4095 //in main feedbackc loop (programmable NCO register) 12 bit 
 #define MAX_OUTPUT_DIVIDER 1024 //output divider (programmable locked NCO divider regitser) 10 bit
-
 
 
 struct PLL_State{
@@ -46,3 +45,4 @@ struct PLL_State{
     //status INTR FLAG
     volatile uint8_t LOCK_FLAG = 0; //lock success indicator, lock = 1
 };
+
