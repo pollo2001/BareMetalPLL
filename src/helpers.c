@@ -21,3 +21,8 @@ uint64_t calculate_freq_word(uint64_t target_freq_hz){
 
     return freq_word;
 }
+
+//calculates the frequency in Hz from a frequency word number
+static inline uint64_t reverse_freq_word(uint64_t freq_word){
+    return freq_word * SYSTEM_CLOCK_HZ / PHASE_ACCUMULATOR_MAX;
+}
