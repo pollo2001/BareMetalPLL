@@ -1,26 +1,35 @@
 {
-	"version": "2.0.0",
-	"tasks": [
-	  {
-		"label": "build C17",
-		"type": "shell",
-		"command": "gcc",
-		"args": [
-		  "-std=c17",
-		  "-o", "${fileDirname}/${fileBasenameNoExtension}",
-		  "${file}",
-		  "-lm",
-		  "-I/opt/homebrew/include",  // For Apple Silicon Mac
-		  "-L/opt/homebrew/lib",      // For Apple Silicon Mac
-		],
-		
-		"group": {
-		  "kind": "build",
-		  "isDefault": true
-		},
-		"problemMatcher": ["$gcc"],
-		"detail": "Generated task for building C17 code on macOS"
-	  }
-	]
-  }
-  
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build project",
+            "type": "shell",
+            "command": "gcc",
+            "args": [
+                "-std=c17",
+                "-Wall", // Enable all warnings (good practice!)
+                "-o", 
+                "${workspaceFolder}/baremetal_pll", // The output file name
+                "${workspaceFolder}/src/main.c",   // Source 1
+                "${workspaceFolder}/src/pll.c",    // Source 2
+                "-I${workspaceFolder}/include",    // Include your headers
+                "-lm"                              // Link the math library (for abs/etc.)
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true // This makes Cmd+Shift+B compile the project
+            },
+            "problemMatcher": ["$gcc"],
+            "detail": "Builds the complete BareMetalPLL project executable."
+        },
+        {
+            "label": "run project",
+            "type": "shell",
+            "command": "${workspaceFolder}/baremetal_pll",
+            "group": "test", // Use the 'test' group for running the executable
+            "dependsOn": ["build project"], // Ensure it compiles before running
+            "problemMatcher": [],
+            "detail": "Runs the compiled BareMetalPLL simulation."
+        }
+    ]
+}

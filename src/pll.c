@@ -1,5 +1,3 @@
-
-
 #include "helpers.h"
 #include "pll.h"
 
@@ -27,6 +25,7 @@ void init_pll(PLL_State* pll){
     //status INTR FLAG, start no lock 
     pll -> LOCK_FLAG = 0; //lock success indicator, lock = 1
     pll -> target_frequency_label = 0; //none, only set when N divide exists
+    pll -> stable_counter = 0;
 }
 
 //update current state pll
@@ -41,8 +40,8 @@ void update_pll(PLL_State *pll){
     //check if reference clock ticks (overflow)
     //checking the if uint32 overflow, occurs when new value smaller than previous value
     if(pll -> ref_phase_accumulator < previous_phase_accumulator){
-        phase_error_detector(pll); //find phase error
-        loop_filter(pll); //upate NCO speed
+        pll_phase_error_detector(pll); //find phase error
+        pll_loop_filter(pll); //upate NCO speed
     }
 
     else 
@@ -67,6 +66,12 @@ void pll_loop_filter(PLL_State *pll){
    pll -> loop_integrator = pll -> loop_integrator + fixed_point_product(pll-> beta_integral_gain, pll -> phase_error);
    int32_t I_out = pll -> loop_integrator; //new integrator value
 
+   //anti wind up: prevent integrator from swelling, so clamp it
+    if (pll -> loop_integrator > INTEGRATOR_SATURATION_LIMIT) //too big
+        pll -> loop_integrator = INTEGRATOR_SATURATION_LIMIT;
+    else if (pll -> loop_integrator < ( -1 * INTEGRATOR_SATURATION_LIMIT)) //too small
+        pll -> loop_integrator = ( -1 * INTEGRATOR_SATURATION_LIMIT);
+
    //derriavtive output: D_out = Kd *  to expand on later if derirvative considered
    // uint32_t D_out = fixed_point_product(pll -> gamma_derivative_gain, pll -> phase_error);
    int32_t total_correction = P_out + I_out; //+ D_out
@@ -77,10 +82,10 @@ void pll_loop_filter(PLL_State *pll){
 }
 
 //get target frequency from client and divide to find mutliplier/dividers and set the NCO
-void pll_set_frequency(uint32_t target_frequency, PLL_State *pll){
+void pll_set_frequency(uint64_t target_frequency, PLL_State *pll){
     //check that target frequency is in bounds of Output frequency
     if (target_frequency > MAX_OUTPUT_FREQUENCY || target_frequency < MIN_OUTPUT_FREQUENCY){
-        printf("ERROR: Target frequency %u out of range, MIN: %llu\nMAX:%llu\n", 
+        printf("ERROR: Target frequency %llu out of range, MIN: %llu\nMAX: %llu\n", 
             target_frequency, MIN_OUTPUT_FREQUENCY, MAX_OUTPUT_FREQUENCY);
         return;
     }
@@ -140,4 +145,23 @@ uint64_t pll_output_frequency(PLL_State *pll)
         return current_nco_freq / pll -> post_divider;
 }
 
-//implement lock check
+//implement lock check, checks if output frequency is within phase jitter accuracy and stable long enough
+uint8_t lock_check(PLL_State *pll){
+    //condition 1
+    //check phase error is less than jitter threshold ]
+    if(abs(pll -> phase_error) < PHASE_JITTER_THRESHOLD){
+         //settling time must be stable for a certain time (x number of ticks), occurs only in first conditon
+        if(pll -> stable_counter < LOCK_TIME_CYCLES)
+              pll -> stable_counter++;
+
+        if(pll -> stable_counter == LOCK_TIME_CYCLES){
+            pll -> LOCK_FLAG = 1;
+        }
+    }
+    else{ //error too large
+        pll -> stable_counter = 0;
+        pll -> LOCK_FLAG = 0;
+    }
+        
+    return pll -> LOCK_FLAG;
+}
